@@ -8,6 +8,7 @@
 
 <!-- Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1187,17 +1188,13 @@ function preloadLogoImage() {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => { logoImageObj = img; resolve(true); };
-    img.onerror = () => { logoImageObj = null; resolve(false); };
+    img.onload = () => { logoImageObj = img; resolve(img); };
+    img.onerror = () => { logoImageObj = null; resolve(null); };
     img.src = 'logo_gau.png?t=' + Date.now();
   });
 }
 
-async function compositeLogoOnCanvas(canvas, size, logoPct) {
-  if (!logoImageObj) {
-    const ok = await preloadLogoImage();
-    if (!ok) { toast('Không load được logo_gau.png', 'error'); return canvas; }
-  }
+async function compositeLogoOnCanvas(canvas, size, logoPct, logoImg) {
   const out = document.createElement('canvas');
   out.width = size; out.height = size;
   const ctx = out.getContext('2d');
@@ -1207,22 +1204,132 @@ async function compositeLogoOnCanvas(canvas, size, logoPct) {
   const lx = Math.round((size - logoSize) / 2);
   const ly = Math.round((size - logoSize) / 2);
 
-  // White padding behind logo
-  const pad = Math.round(logoSize * 0.08);
-  ctx.fillStyle = '#FFFFFF';
+  // Circular white background
+  const radius = logoSize / 2 + Math.round(logoSize * 0.1);
+  const cx = lx + logoSize / 2, cy = ly + logoSize / 2;
+  ctx.save();
   ctx.beginPath();
-  ctx.roundRect(lx - pad, ly - pad, logoSize + pad*2, logoSize + pad*2, pad);
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fillStyle = '#FFFFFF';
   ctx.fill();
+  ctx.restore();
 
-  ctx.drawImage(logoImageObj, lx, ly, logoSize, logoSize);
+  // Clip logo to circle
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, logoSize / 2, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.drawImage(logoImg, lx, ly, logoSize, logoSize);
+  ctx.restore();
+
   return out;
+}
+
+// ─── CUSTOM QR CANVAS RENDERER ───
+// Draws rounded-dot modules + rounded-square finder patterns
+function drawStyledQR(text, size, darkColor, lightColor, ecl) {
+  const ecMap = { L: 'L', M: 'M', Q: 'Q', H: 'H' };
+  const qr = qrcode(0, ecMap[ecl] || 'H');
+  qr.addData(text);
+  qr.make();
+
+  const modules = qr.getModuleCount();
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = lightColor;
+  ctx.fillRect(0, 0, size, size);
+
+  const margin = Math.round(size * 0.04);
+  const cellSize = (size - margin * 2) / modules;
+  const dotR = cellSize * 0.45; // dot radius
+
+  // Finder pattern positions (top-left corner of each 7x7 block)
+  const finderPos = [[0,0],[modules-7,0],[0,modules-7]];
+  function isFinderCell(r, c) {
+    for (const [fr, fc] of finderPos) {
+      if (r >= fr && r < fr+7 && c >= fc && c < fc+7) return true;
+    }
+    return false;
+  }
+  function isSeparator(r, c) {
+    // 1-cell border around each finder
+    for (const [fr, fc] of finderPos) {
+      if (r >= fr-1 && r <= fr+7 && c >= fc-1 && c <= fc+7 &&
+          (r === fr-1 || r === fr+7 || c === fc-1 || c === fc+7)) return true;
+    }
+    return false;
+  }
+
+  ctx.fillStyle = darkColor;
+
+  // Draw regular dots (non-finder cells)
+  for (let row = 0; row < modules; row++) {
+    for (let col = 0; col < modules; col++) {
+      if (isFinderCell(row, col) || isSeparator(row, col)) continue;
+      if (!qr.isDark(row, col)) continue;
+      const x = margin + col * cellSize + cellSize / 2;
+      const y = margin + row * cellSize + cellSize / 2;
+      ctx.beginPath();
+      ctx.arc(x, y, dotR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Draw finder patterns with rounded squares
+  function drawFinder(fr, fc) {
+    const x0 = margin + fc * cellSize;
+    const y0 = margin + fr * cellSize;
+    const outerW = 7 * cellSize;
+    const r = cellSize * 1.2; // corner radius for outer
+
+    // Outer square (dark)
+    ctx.fillStyle = darkColor;
+    roundRect(ctx, x0, y0, outerW, outerW, r);
+    ctx.fill();
+
+    // Inner white gap
+    const gap = cellSize;
+    ctx.fillStyle = lightColor;
+    roundRect(ctx, x0 + gap, y0 + gap, outerW - gap*2, outerW - gap*2, r * 0.5);
+    ctx.fill();
+
+    // Inner dark square (3×3)
+    const inner = cellSize;
+    ctx.fillStyle = darkColor;
+    roundRect(ctx, x0 + gap + inner, y0 + gap + inner,
+              outerW - (gap + inner)*2, outerW - (gap + inner)*2, r * 0.4);
+    ctx.fill();
+  }
+
+  for (const [fr, fc] of finderPos) {
+    drawFinder(fr, fc);
+  }
+
+  return canvas;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
 // ─── GENERATE QR ───
 async function generateAll() {
   let items = [];
 
-  // Collect from active tab
   const activeTab = document.querySelector('.tab-panel.active').id;
   if (activeTab === 'tab-excel') {
     if (excelData.length === 0) { toast('Vui lòng import file Excel trước', 'error'); return; }
@@ -1247,56 +1354,39 @@ async function generateAll() {
   const useLogo = document.getElementById('logoToggle').checked;
   const logoPct = parseInt(document.getElementById('logoSizeSlider').value);
 
+  // Pre-load logo image once
+  let logoImg = null;
+  if (useLogo) {
+    logoImg = await preloadLogoImage();
+    if (!logoImg) { toast('Không load được logo_gau.png — QR sẽ không có logo', 'error'); }
+  }
+
   const grid = document.getElementById('qrGrid');
   const empty = document.getElementById('emptyState');
-  const renderArea = document.getElementById('qrRenderArea');
-  renderArea.innerHTML = '';
   grid.innerHTML = '';
   grid.style.display = 'grid';
   empty.style.display = 'none';
 
   document.getElementById('resultsCount').style.display = 'inline';
-  document.getElementById('resultsCount').textContent = `0 / ${items.length} mã`;
+  document.getElementById('resultsCount').textContent = '0 / ' + items.length + ' mã';
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     const finalContent = processContent(item.content);
 
-    // Render QR in hidden area
-    const tmpDiv = document.createElement('div');
-    tmpDiv.id = `qr_tmp_${i}`;
-    renderArea.appendChild(tmpDiv);
-
     try {
-      await new Promise((resolve, reject) => {
-        const qr = new QRCode(tmpDiv, {
-          text: finalContent,
-          width: size,
-          height: size,
-          colorDark: color,
-          colorLight: bg,
-          correctLevel: QRCode.CorrectLevel[ecl]
-        });
-        setTimeout(resolve, 120);
-      });
-
-      const rawCanvas = tmpDiv.querySelector('canvas');
-      let finalCanvas = rawCanvas;
-      if (rawCanvas && useLogo) {
-        finalCanvas = await compositeLogoOnCanvas(rawCanvas, size, logoPct);
+      let canvas = drawStyledQR(finalContent, size, color, bg, ecl);
+      if (useLogo && logoImg) {
+        canvas = await compositeLogoOnCanvas(canvas, size, logoPct, logoImg);
       }
-      const dataUrl = finalCanvas ? finalCanvas.toDataURL('image/png') : null;
-
+      const dataUrl = canvas.toDataURL('image/png');
       generatedQRs.push({ name: item.name, content: finalContent, dataUrl, size });
 
-      // Render card
       const badge = typeBadgeColors[currentType] || typeBadgeColors.text;
       const card = document.createElement('div');
       card.className = 'qr-item';
-      const imgHtml = dataUrl
-        ? '<img src="' + dataUrl + '" alt="' + escHtml(item.name) + '">'
-        : '<span style="color:#ccc;font-size:11px;">Lỗi tạo QR</span>';
       const idx = generatedQRs.length - 1;
+      const imgHtml = '<img src="' + dataUrl + '" alt="' + escHtml(item.name) + '">';
       card.innerHTML =
         '<span class="qr-type-badge" style="background:' + badge.bg + '; color:' + badge.color + ';">' + getTypeLabel(currentType) + '</span>' +
         '<div class="qr-canvas-wrap">' + imgHtml + '</div>' +
@@ -1310,12 +1400,14 @@ async function generateAll() {
 
     } catch(e) {
       generatedQRs.push({ name: item.name, content: finalContent, dataUrl: null, size });
+      console.error('QR error:', e);
     }
 
-    document.getElementById('resultsCount').textContent = `${i+1} / ${items.length} mã`;
+    document.getElementById('resultsCount').textContent = (i+1) + ' / ' + items.length + ' mã';
+    await sleep(10);
   }
 
-  toast(`✅ Đã tạo ${items.length} mã QR thành công!`, 'success');
+  toast('✅ Đã tạo ' + items.length + ' mã QR thành công!', 'success');
 }
 
 function getTypeLabel(type) {
