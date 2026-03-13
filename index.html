@@ -613,6 +613,139 @@ textarea {
 .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
 .dot.green { background: #22c55e; }
 .dot.gray { background: var(--ink3); }
+
+/* ─── LOGO TOGGLE ─── */
+.logo-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.logo-toggle-row:hover { border-color: var(--accent); background: var(--accent2); }
+.logo-toggle-row.active { border-color: var(--accent); background: var(--accent2); }
+
+.logo-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-preview-thumb {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  object-fit: contain;
+  background: white;
+  padding: 3px;
+  display: none;
+}
+.logo-preview-thumb.visible { display: block; }
+.logo-placeholder-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px dashed var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.logo-toggle-text strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.logo-toggle-text span {
+  font-size: 11.5px;
+  color: var(--ink3);
+}
+
+/* Custom checkbox/switch */
+.toggle-switch {
+  position: relative;
+  width: 40px; height: 22px;
+  flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border);
+  border-radius: 22px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  left: 3px; top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+.logo-options {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--surface2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: none;
+}
+.logo-options.visible { display: block; }
+
+.logo-size-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.logo-size-row label { margin: 0; white-space: nowrap; font-size: 11.5px; text-transform: none; letter-spacing: 0; color: var(--ink2); font-weight: 500; }
+.logo-size-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 4px;
+  outline: none;
+}
+.logo-size-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.logo-size-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+  min-width: 32px;
+  text-align: right;
+}
+
+.logo-status {
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
+.logo-status.ok { color: var(--accent); }
+.logo-status.warn { color: #E07B00; }
+.logo-status.err { color: var(--red); }
 </style>
 </head>
 <body>
@@ -790,6 +923,36 @@ textarea {
           </select>
         </div>
 
+        <!-- LOGO TOGGLE -->
+        <div class="form-row" style="margin-top:4px;">
+          <label>Logo ở giữa QR</label>
+          <div class="logo-toggle-row" id="logoToggleRow" onclick="toggleLogo()">
+            <div class="logo-toggle-left">
+              <div class="logo-placeholder-icon" id="logoPlaceholderIcon">🐻</div>
+              <img id="logoThumb" class="logo-preview-thumb" src="logo_gau.png" alt="logo"
+                onload="onLogoThumbLoad()"
+                onerror="logoLoaded=false; document.getElementById('logoToggleDesc').textContent='Không tìm thấy logo_gau.png'; setLogoStatus('err','❌ Không load được — kiểm tra cùng thư mục')">
+              <div class="logo-toggle-text">
+                <strong>Chèn logo_gau.png</strong>
+                <span id="logoToggleDesc">Bật để thêm logo vào giữa QR</span>
+              </div>
+            </div>
+            <label class="toggle-switch" onclick="event.stopPropagation()">
+              <input type="checkbox" id="logoToggle" onchange="onLogoToggleChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="logo-options" id="logoOptions">
+            <div class="logo-size-row">
+              <label>Kích thước logo:</label>
+              <input type="range" class="logo-size-slider" id="logoSizeSlider" min="10" max="30" value="22" oninput="updateLogoSizeLabel()">
+              <span class="logo-size-value" id="logoSizeValue">22%</span>
+            </div>
+            <div style="font-size:11px; color:var(--ink3); margin-top:4px;">⚠️ Khuyến nghị dùng mức sửa lỗi <strong>H</strong> khi bật logo</div>
+            <div class="logo-status" id="logoStatus"></div>
+          </div>
+        </div>
+
         <button class="btn btn-primary btn-full" onclick="generateAll()" style="margin-top:4px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           Tạo QR Code
@@ -874,6 +1037,14 @@ let currentType = 'url';
 let currentFormat = 'png';
 let generatedQRs = [];
 let excelData = [];
+let logoLoaded = false;  // declared early for onerror inline handler
+
+function setLogoStatus(type, msg) {
+  const el = document.getElementById('logoStatus');
+  if (!el) return;
+  el.className = 'logo-status ' + type;
+  el.textContent = msg;
+}
 
 const typeHints = {
   url: '💡 <strong>Link/URL:</strong> Nhập URL đầy đủ, ví dụ: <code>https://example.com</code>',
@@ -971,6 +1142,82 @@ function processContent(content) {
   }
 }
 
+// ─── LOGO TOGGLE ───
+let logoImageObj = null;
+
+function onLogoThumbLoad() {
+  logoLoaded = true;
+  document.getElementById('logoThumb').classList.add('visible');
+  document.getElementById('logoPlaceholderIcon').style.display = 'none';
+  setLogoStatus('ok', '✅ logo_gau.png đã sẵn sàng');
+}
+
+function toggleLogo() {
+  const cb = document.getElementById('logoToggle');
+  cb.checked = !cb.checked;
+  onLogoToggleChange();
+}
+
+function onLogoToggleChange() {
+  const on = document.getElementById('logoToggle').checked;
+  const row = document.getElementById('logoToggleRow');
+  const opts = document.getElementById('logoOptions');
+  row.classList.toggle('active', on);
+  opts.classList.toggle('visible', on);
+  document.getElementById('logoToggleDesc').textContent = on ? 'Logo sẽ được chèn vào giữa QR' : 'Bật để thêm logo vào giữa QR';
+
+  if (on && !logoLoaded) {
+    setLogoStatus('warn', '⚠️ Chưa load được logo_gau.png');
+  } else if (on) {
+    const pct = document.getElementById('logoSizeSlider').value;
+    setLogoStatus('ok', `✅ Sẵn sàng · kích thước ${pct}% · dùng ECL H để an toàn`);
+  }
+}
+
+function updateLogoSizeLabel() {
+  const v = document.getElementById('logoSizeSlider').value;
+  document.getElementById('logoSizeValue').textContent = v + '%';
+  const warn = parseInt(v) > 25;
+  setLogoStatus(warn ? 'warn' : 'ok',
+    warn ? `⚠️ ${v}% có thể ảnh hưởng quét — nên ≤ 25%`
+         : `✅ ${v}% — An toàn`);
+}
+
+function preloadLogoImage() {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => { logoImageObj = img; resolve(true); };
+    img.onerror = () => { logoImageObj = null; resolve(false); };
+    img.src = 'logo_gau.png?t=' + Date.now();
+  });
+}
+
+async function compositeLogoOnCanvas(canvas, size, logoPct) {
+  if (!logoImageObj) {
+    const ok = await preloadLogoImage();
+    if (!ok) { toast('Không load được logo_gau.png', 'error'); return canvas; }
+  }
+  const out = document.createElement('canvas');
+  out.width = size; out.height = size;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(canvas, 0, 0);
+
+  const logoSize = Math.round(size * (logoPct / 100));
+  const lx = Math.round((size - logoSize) / 2);
+  const ly = Math.round((size - logoSize) / 2);
+
+  // White padding behind logo
+  const pad = Math.round(logoSize * 0.08);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.roundRect(lx - pad, ly - pad, logoSize + pad*2, logoSize + pad*2, pad);
+  ctx.fill();
+
+  ctx.drawImage(logoImageObj, lx, ly, logoSize, logoSize);
+  return out;
+}
+
 // ─── GENERATE QR ───
 async function generateAll() {
   let items = [];
@@ -997,6 +1244,8 @@ async function generateAll() {
   const color = document.getElementById('qrColor').value;
   const bg = document.getElementById('bgColor').value;
   const ecl = document.getElementById('errorLevel').value;
+  const useLogo = document.getElementById('logoToggle').checked;
+  const logoPct = parseInt(document.getElementById('logoSizeSlider').value);
 
   const grid = document.getElementById('qrGrid');
   const empty = document.getElementById('emptyState');
@@ -1031,8 +1280,12 @@ async function generateAll() {
         setTimeout(resolve, 120);
       });
 
-      const canvas = tmpDiv.querySelector('canvas');
-      const dataUrl = canvas ? canvas.toDataURL('image/png') : null;
+      const rawCanvas = tmpDiv.querySelector('canvas');
+      let finalCanvas = rawCanvas;
+      if (rawCanvas && useLogo) {
+        finalCanvas = await compositeLogoOnCanvas(rawCanvas, size, logoPct);
+      }
+      const dataUrl = finalCanvas ? finalCanvas.toDataURL('image/png') : null;
 
       generatedQRs.push({ name: item.name, content: finalContent, dataUrl, size });
 
@@ -1040,18 +1293,19 @@ async function generateAll() {
       const badge = typeBadgeColors[currentType] || typeBadgeColors.text;
       const card = document.createElement('div');
       card.className = 'qr-item';
-      card.innerHTML = `
-        <span class="qr-type-badge" style="background:${badge.bg}; color:${badge.color};">${getTypeLabel(currentType)}</span>
-        <div class="qr-canvas-wrap">
-          ${dataUrl ? `<img src="${dataUrl}" alt="${item.name}">` : '<span style="color:#ccc;font-size:11px;">Lỗi tạo QR</span>'}
-        </div>
-        <div class="qr-name">${escHtml(item.name)}</div>
-        <div class="qr-content-preview">${escHtml(item.content)}</div>
-        <div class="qr-actions">
-          <button class="btn btn-ghost btn-sm" onclick="downloadSingle(${generatedQRs.length-1})">⬇ Tải</button>
-          <button class="btn btn-ghost btn-sm" onclick="copyDataUrl(${generatedQRs.length-1})">📋 Copy</button>
-        </div>
-      `;
+      const imgHtml = dataUrl
+        ? '<img src="' + dataUrl + '" alt="' + escHtml(item.name) + '">'
+        : '<span style="color:#ccc;font-size:11px;">Lỗi tạo QR</span>';
+      const idx = generatedQRs.length - 1;
+      card.innerHTML =
+        '<span class="qr-type-badge" style="background:' + badge.bg + '; color:' + badge.color + ';">' + getTypeLabel(currentType) + '</span>' +
+        '<div class="qr-canvas-wrap">' + imgHtml + '</div>' +
+        '<div class="qr-name">' + escHtml(item.name) + '</div>' +
+        '<div class="qr-content-preview">' + escHtml(item.content) + '</div>' +
+        '<div class="qr-actions">' +
+          '<button class="btn btn-ghost btn-sm" onclick="downloadSingle(' + idx + ')">⬇ Tải</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="copyDataUrl(' + idx + ')">📋 Copy</button>' +
+        '</div>';
       grid.appendChild(card);
 
     } catch(e) {
