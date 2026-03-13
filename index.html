@@ -737,6 +737,100 @@ textarea {
   text-align: right;
 }
 
+/* ─── LOGO SELECTOR GRID ─── */
+.logo-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.logo-sel-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 6px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.logo-sel-item:hover {
+  border-color: var(--accent);
+  background: var(--accent2);
+}
+
+.logo-sel-item.active {
+  border-color: var(--accent);
+  background: var(--accent2);
+  box-shadow: 0 0 0 2px rgba(26,107,60,0.15);
+}
+
+.logo-sel-thumb {
+  width: 36px; height: 36px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: white;
+  padding: 2px;
+  border: 1px solid var(--border);
+}
+
+.logo-sel-icon {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  border-radius: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+
+.logo-sel-item span {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink2);
+  line-height: 1.2;
+}
+
+.logo-sel-item.active span { color: var(--accent3); }
+
+/* ─── LANG SWITCHER ─── */
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.lang-btn.active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+.lang-btn:hover:not(.active) { color: var(--ink); }
+.lang-flag { font-size: 15px; line-height: 1; }
+
 .logo-status {
   font-size: 11px;
   display: flex;
@@ -764,7 +858,13 @@ textarea {
     </div>
     QR Studio — Trung Sơn Pharma
   </div>
-  <div class="header-badge">© ECM Team · 2026</div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="lang-switcher">
+      <button class="lang-btn active" id="langVI" onclick="setLang('vi')"><span class="lang-flag">🇻🇳</span> Tiếng Việt</button>
+      <button class="lang-btn" id="langKO" onclick="setLang('ko')"><span class="lang-flag">🇰🇷</span> 한국어</button>
+    </div>
+    <div class="header-badge">© ECM Team · 2026</div>
+  </div>
 </header>
 
 <!-- BODY -->
@@ -780,8 +880,8 @@ textarea {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
         </div>
         <div>
-          <div class="card-title">Loại QR Code</div>
-          <div class="card-subtitle">Chọn nền tảng phù hợp</div>
+          <div class="card-title" data-i18n="qrTypeTitle">Loại QR Code</div>
+          <div class="card-subtitle" data-i18n="qrTypeSubtitle">Chọn nền tảng phù hợp</div>
         </div>
       </div>
       <div class="card-body">
@@ -810,6 +910,9 @@ textarea {
           <button class="type-btn" data-type="text" onclick="selectType(this)">
             <span class="type-emoji">📝</span>Văn bản
           </button>
+          <button class="type-btn" data-type="kakao" onclick="selectType(this)">
+            <span class="type-emoji">💛</span>KakaoTalk
+          </button>
         </div>
 
         <div id="typeHint" class="hint-box">
@@ -825,44 +928,44 @@ textarea {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
         </div>
         <div>
-          <div class="card-title">Nhập Dữ Liệu</div>
-          <div class="card-subtitle">Excel import hoặc nhập tay</div>
+          <div class="card-title" data-i18n="inputTitle">Nhập Dữ Liệu</div>
+          <div class="card-subtitle" data-i18n="inputSubtitle">Excel import hoặc nhập tay</div>
         </div>
       </div>
       <div class="card-body">
         <div class="tab-bar">
-          <button class="tab-btn active" onclick="switchTab('manual')">✏️ Nhập tay</button>
-          <button class="tab-btn" onclick="switchTab('excel')">📊 Import Excel</button>
+          <button class="tab-btn active" onclick="switchTab('manual')" data-i18n="tabManual">✏️ Nhập tay</button>
+          <button class="tab-btn" onclick="switchTab('excel')" data-i18n="tabExcel">📊 Import Excel</button>
         </div>
 
         <!-- Manual Tab -->
         <div class="tab-panel active" id="tab-manual">
-          <div class="hint-box">
+          <div class="hint-box" data-i18n="manualHint">
             📋 Mỗi dòng một mã QR. Cú pháp: <strong>Tên,nội dung</strong><br>
             Ví dụ: <code>Website chính,https://example.com</code>
           </div>
           <div class="form-row">
-            <label>Dữ liệu QR (nhiều dòng)</label>
+            <label data-i18n="manualLabel">Dữ liệu QR (nhiều dòng)</label>
             <textarea id="manualInput" placeholder="Website chính,https://example.com&#10;Facebook,https://facebook.com/page&#10;Hotline,0901234567&#10;Cửa hàng HCM,https://maps.google.com/?q=Ho+Chi+Minh" rows="8"></textarea>
           </div>
         </div>
 
         <!-- Excel Tab -->
         <div class="tab-panel" id="tab-excel">
-          <div class="hint-box">
+          <div class="hint-box" data-i18n="excelHint">
             📊 File Excel cần có: <strong>Cột A = Tên QR</strong>, <strong>Cột B = Nội dung</strong><br>
             Hỗ trợ: .xlsx, .xls, .csv
           </div>
           <label class="upload-zone" id="uploadZone" for="excelFile">
             <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" onchange="handleExcelUpload(event)">
             <div class="upload-zone-icon">📁</div>
-            <p>Kéo thả file hoặc nhấn để chọn</p>
-            <span>Hỗ trợ .xlsx · .xls · .csv</span>
+            <p data-i18n="uploadText">Kéo thả file hoặc nhấn để chọn</p>
+            <span data-i18n="uploadSub">Hỗ trợ .xlsx · .xls · .csv</span>
           </label>
           <div id="excelPreview" style="margin-top:12px; display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span style="font-size:12px; font-weight:600; color:var(--accent);">✅ Đã đọc file</span>
-              <button class="btn btn-ghost btn-sm" onclick="clearExcel()">Xóa</button>
+              <span style="font-size:12px; font-weight:600; color:var(--accent);" data-i18n="excelReadOk">✅ Đã đọc file</span>
+              <button class="btn btn-ghost btn-sm" onclick="clearExcel()" data-i18n="btnClear">Xóa</button>
             </div>
             <div id="excelInfo" style="font-size:12px; color:var(--ink3); font-family:'IBM Plex Mono',monospace;"></div>
           </div>
@@ -877,23 +980,23 @@ textarea {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 011.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
         </div>
         <div>
-          <div class="card-title">Tuỳ Chỉnh</div>
-          <div class="card-subtitle">Màu sắc & kích thước</div>
+          <div class="card-title" data-i18n="customTitle">Tuỳ Chỉnh</div>
+          <div class="card-subtitle" data-i18n="customSubtitle">Màu sắc & kích thước</div>
         </div>
       </div>
       <div class="card-body">
-        <div class="form-grid">
+          <div class="form-grid">
           <div class="form-row">
-            <label>Màu QR</label>
+            <label data-i18n="labelQrColor">Màu QR</label>
             <div class="color-row">
               <div class="color-field">
                 <input type="color" id="qrColor" value="#000000">
-                <span>Mã QR</span>
+                <span data-i18n="labelQrColorSpan">Mã QR</span>
               </div>
             </div>
           </div>
           <div class="form-row">
-            <label>Màu nền</label>
+            <label data-i18n="labelBgColor">Màu nền</label>
             <div class="color-row">
               <div class="color-field">
                 <input type="color" id="bgColor" value="#FFFFFF">
@@ -904,59 +1007,67 @@ textarea {
         </div>
 
         <div class="form-row">
-          <label>Kích thước (px)</label>
+          <label data-i18n="labelSize">Kích thước (px)</label>
           <select id="qrSize" class="size-select">
-            <option value="150">150px (Nhỏ)</option>
-            <option value="200">200px (Vừa)</option>
-            <option value="300" selected>300px (Chuẩn)</option>
-            <option value="400">400px (Lớn)</option>
-            <option value="512">512px (Rất lớn)</option>
+            <option value="150" data-i18n="sizeSmall">150px (Nhỏ)</option>
+            <option value="200" data-i18n="sizeMed">200px (Vừa)</option>
+            <option value="300" data-i18n="sizeStd">300px (Chuẩn)</option>
+            <option value="400" data-i18n="sizeLg">400px (Lớn)</option>
+            <option value="512" selected data-i18n="sizeXl">512px (Rất lớn)</option>
           </select>
         </div>
 
         <div class="form-row">
-          <label>Mức độ sửa lỗi</label>
+          <label data-i18n="labelEcl">Mức độ sửa lỗi</label>
           <select id="errorLevel">
-            <option value="L">L — Thấp (7%)</option>
-            <option value="M" selected>M — Trung bình (15%)</option>
-            <option value="Q">Q — Cao (25%)</option>
-            <option value="H">H — Rất cao (30%)</option>
+            <option value="L" data-i18n="eclL">L — Thấp (7%)</option>
+            <option value="M" data-i18n="eclM">M — Trung bình (15%)</option>
+            <option value="Q" data-i18n="eclQ">Q — Cao (25%)</option>
+            <option value="H" selected data-i18n="eclH">H — Rất cao (30%)</option>
           </select>
         </div>
 
-        <!-- LOGO TOGGLE -->
+        <!-- LOGO SELECTOR -->
         <div class="form-row" style="margin-top:4px;">
-          <label>Logo ở giữa QR</label>
-          <div class="logo-toggle-row" id="logoToggleRow" onclick="toggleLogo()">
-            <div class="logo-toggle-left">
-              <div class="logo-placeholder-icon" id="logoPlaceholderIcon">🐻</div>
-              <img id="logoThumb" class="logo-preview-thumb" src="logo_gau.png" alt="logo"
-                onload="onLogoThumbLoad()"
-                onerror="logoLoaded=false; document.getElementById('logoToggleDesc').textContent='Không tìm thấy logo_gau.png'; setLogoStatus('err','❌ Không load được — kiểm tra cùng thư mục')">
-              <div class="logo-toggle-text">
-                <strong>Chèn logo_gau.png</strong>
-                <span id="logoToggleDesc">Bật để thêm logo vào giữa QR</span>
-              </div>
+          <label data-i18n="labelLogo">Logo ở giữa QR</label>
+          <div class="logo-selector-grid" id="logoSelectorGrid">
+            <div class="logo-sel-item" data-logo="none" onclick="selectLogo(this)">
+              <div class="logo-sel-icon">🚫</div>
+              <span data-i18n="logoNone">Không logo</span>
             </div>
-            <label class="toggle-switch" onclick="event.stopPropagation()">
-              <input type="checkbox" id="logoToggle" onchange="onLogoToggleChange()">
-              <span class="toggle-slider"></span>
-            </label>
+            <div class="logo-sel-item active" data-logo="logo_gau.png" onclick="selectLogo(this)">
+              <img class="logo-sel-thumb" src="logo_gau.png" alt="Gấu"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+              <div class="logo-sel-icon" style="display:none">🐻</div>
+              <span>Bác sĩ Gấu</span>
+            </div>
+            <div class="logo-sel-item" data-logo="dwp.png" onclick="selectLogo(this)">
+              <img class="logo-sel-thumb" src="dwp.png" alt="DonghaPharm"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+              <div class="logo-sel-icon" style="display:none">💊</div>
+              <span>DonghaPharm</span>
+            </div>
+            <div class="logo-sel-item" data-logo="tscare.png" onclick="selectLogo(this)">
+              <img class="logo-sel-thumb" src="tscare.png" alt="Trung Son Care"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+              <div class="logo-sel-icon" style="display:none">🌿</div>
+              <span>TS Care</span>
+            </div>
           </div>
-          <div class="logo-options" id="logoOptions">
+          <div class="logo-options visible" id="logoOptions">
             <div class="logo-size-row">
-              <label>Kích thước logo:</label>
-              <input type="range" class="logo-size-slider" id="logoSizeSlider" min="10" max="30" value="22" oninput="updateLogoSizeLabel()">
-              <span class="logo-size-value" id="logoSizeValue">22%</span>
+              <label data-i18n="logoSizeLabel">Kích thước logo:</label>
+              <input type="range" class="logo-size-slider" id="logoSizeSlider" min="10" max="30" value="25" oninput="updateLogoSizeLabel()">
+              <span class="logo-size-value" id="logoSizeValue">25%</span>
             </div>
-            <div style="font-size:11px; color:var(--ink3); margin-top:4px;">⚠️ Khuyến nghị dùng mức sửa lỗi <strong>H</strong> khi bật logo</div>
+            <div style="font-size:11px; color:var(--ink3); margin-top:4px;" data-i18n="logoEclWarn">⚠️ Khuyến nghị dùng mức sửa lỗi <strong>H</strong> khi bật logo</div>
             <div class="logo-status" id="logoStatus"></div>
           </div>
         </div>
 
-        <button class="btn btn-primary btn-full" onclick="generateAll()" style="margin-top:4px;">
+        <button class="btn btn-primary btn-full" onclick="generateAll()" style="margin-top:4px;" id="btnGenerate">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Tạo QR Code
+          <span data-i18n="btnGenerate">Tạo QR Code</span>
         </button>
       </div>
     </div>
@@ -973,13 +1084,13 @@ textarea {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </div>
         <div>
-          <div class="card-title">Tải Xuống</div>
-          <div class="card-subtitle">Chọn định dạng xuất</div>
+          <div class="card-title" data-i18n="downloadTitle">Tải Xuống</div>
+          <div class="card-subtitle" data-i18n="downloadSubtitle">Chọn định dạng xuất</div>
         </div>
       </div>
       <div class="card-body">
         <div class="form-row">
-          <label>Định dạng file</label>
+          <label data-i18n="labelFormat">Định dạng file</label>
           <div class="format-row">
             <button class="format-tag active" data-fmt="png" onclick="selectFormat(this)">PNG</button>
             <button class="format-tag" data-fmt="jpeg" onclick="selectFormat(this)">JPEG</button>
@@ -996,7 +1107,7 @@ textarea {
         <div class="btn-group" style="margin-top:8px;">
           <button class="btn btn-primary btn-full" onclick="downloadAll()" id="btnDownloadAll">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Tải tất cả (ZIP)
+            <span data-i18n="btnDownloadAll">Tải tất cả (ZIP)</span>
           </button>
         </div>
       </div>
@@ -1009,15 +1120,15 @@ textarea {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
         </div>
         <div style="flex:1;">
-          <div class="card-title">Kết Quả</div>
-          <div class="card-subtitle">Xem trước & tải từng mã</div>
+          <div class="card-title" data-i18n="resultsTitle">Kết Quả</div>
+          <div class="card-subtitle" data-i18n="resultsSubtitle">Xem trước & tải từng mã</div>
         </div>
         <div id="resultsCount" class="results-count" style="display:none;"></div>
       </div>
       <div class="card-body">
         <div id="emptyState" class="empty-state">
           <div class="empty-icon">🔲</div>
-          <p>Chưa có mã QR nào<br><span style="font-size:12px; color:var(--ink3);">Nhập dữ liệu và nhấn "Tạo QR Code"</span></p>
+          <p data-i18n="emptyState">Chưa có mã QR nào<br><span style="font-size:12px; color:var(--ink3);">Nhập dữ liệu và nhấn "Tạo QR Code"</span></p>
         </div>
         <div id="qrGrid" class="qr-grid" style="display:none;"></div>
       </div>
@@ -1038,7 +1149,166 @@ let currentType = 'url';
 let currentFormat = 'png';
 let generatedQRs = [];
 let excelData = [];
-let logoLoaded = false;  // declared early for onerror inline handler
+let logoLoaded = false;
+let currentLang = 'vi';
+
+// ─── I18N ───
+const i18n = {
+  vi: {
+    qrTypeTitle:'Loại QR Code', qrTypeSubtitle:'Chọn nền tảng phù hợp',
+    inputTitle:'Nhập Dữ Liệu', inputSubtitle:'Excel import hoặc nhập tay',
+    tabManual:'✏️ Nhập tay', tabExcel:'📊 Import Excel',
+    manualHint:'📋 Mỗi dòng một mã QR. Cú pháp: <strong>Tên,nội dung</strong><br>Ví dụ: <code>Website chính,https://example.com</code>',
+    manualLabel:'Dữ liệu QR (nhiều dòng)',
+    manualPlaceholder:'Website chính,https://example.com\nFacebook,https://facebook.com/page\nHotline,0901234567\nCửa hàng HCM,https://maps.google.com/?q=Ho+Chi+Minh',
+    excelHint:'📊 File Excel cần có: <strong>Cột A = Tên QR</strong>, <strong>Cột B = Nội dung</strong><br>Hỗ trợ: .xlsx, .xls, .csv',
+    uploadText:'Kéo thả file hoặc nhấn để chọn', uploadSub:'Hỗ trợ .xlsx · .xls · .csv',
+    excelReadOk:'✅ Đã đọc file', btnClear:'Xóa',
+    customTitle:'Tuỳ Chỉnh', customSubtitle:'Màu sắc & kích thước',
+    labelQrColor:'Màu QR', labelQrColorSpan:'Mã QR', labelBgColor:'Màu nền',
+    labelSize:'Kích thước (px)', labelEcl:'Mức độ sửa lỗi',
+    sizeSmall:'150px (Nhỏ)', sizeMed:'200px (Vừa)', sizeStd:'300px (Chuẩn)', sizeLg:'400px (Lớn)', sizeXl:'512px (Rất lớn)',
+    eclL:'L — Thấp (7%)', eclM:'M — Trung bình (15%)', eclQ:'Q — Cao (25%)', eclH:'H — Rất cao (30%)',
+    labelLogo:'Logo ở giữa QR', logoName:'Chèn logo_gau.png', logoNone:'Không logo',
+    logoDesc:'Bật để thêm logo vào giữa QR', logoDescOn:'Logo sẽ được chèn vào giữa QR',
+    logoNotFound:'Không tìm thấy logo_gau.png',
+    logoErr:'❌ Không load được — kiểm tra cùng thư mục',
+    logoReady:'✅ logo_gau.png đã sẵn sàng',
+    logoSizeLabel:'Kích thước logo:',
+    logoEclWarn:'⚠️ Khuyến nghị dùng mức sửa lỗi <strong>H</strong> khi bật logo',
+    logoWarnPct:'% có thể ảnh hưởng quét — nên ≤ 25%',
+    logoSafe:'% — An toàn',
+    logoNoLoad:'⚠️ Chưa load được logo_gau.png',
+    btnGenerate:'Tạo QR Code',
+    downloadTitle:'Tải Xuống', downloadSubtitle:'Chọn định dạng xuất',
+    labelFormat:'Định dạng file',
+    btnDownloadAll:'Tải tất cả (ZIP)',
+    resultsTitle:'Kết Quả', resultsSubtitle:'Xem trước & tải từng mã',
+    emptyState:'Chưa có mã QR nào<br><span style="font-size:12px;color:var(--ink3)">Nhập dữ liệu và nhấn "Tạo QR Code"</span>',
+    btnDownload:'⬇ Tải', btnCopy:'📋 Copy',
+    toastExcelRequired:'Vui lòng import file Excel trước',
+    toastNoData:'Vui lòng nhập dữ liệu',
+    toastNoValid:'Không có dữ liệu hợp lệ',
+    toastLogoFail:'Không load được logo_gau.png — QR sẽ không có logo',
+    toastSuccess:'✅ Đã tạo {n} mã QR thành công!',
+    toastDownloaded:'Đã tải:',
+    toastNoQR:'Chưa có QR nào để tải',
+    toastCopied:'Đã copy Data URL!',
+    toastCopyFail:'Không thể copy',
+    toastExcelRead:'Đã đọc {n} dòng từ Excel',
+    toastExcelErr:'Lỗi đọc file Excel:',
+    progressProcessing:'Đang xử lý',
+    progressPdf:'Trang PDF:',
+    typeHints: {
+      url:'💡 <strong>Link/URL:</strong> Nhập URL đầy đủ, ví dụ: <code>https://example.com</code>',
+      facebook:'💡 <strong>Facebook:</strong> Nhập link profile/page, ví dụ: <code>https://facebook.com/username</code>',
+      tiktok:'💡 <strong>TikTok:</strong> Nhập link profile, ví dụ: <code>https://tiktok.com/@username</code>',
+      youtube:'💡 <strong>YouTube:</strong> Nhập link kênh hoặc video, ví dụ: <code>https://youtube.com/@channel</code>',
+      zalo:'💡 <strong>Zalo:</strong> Nhập số điện thoại Zalo hoặc link Zalo OA, ví dụ: <code>0901234567</code>',
+      maps:'💡 <strong>Google Maps:</strong> Nhập URL Google Maps hoặc địa chỉ, ví dụ: <code>Số 1 Lê Lợi, Cần Thơ</code>',
+      phone:'💡 <strong>Điện thoại:</strong> Nhập số điện thoại, ví dụ: <code>0901234567</code>',
+      text:'💡 <strong>Văn bản:</strong> Nhập bất kỳ nội dung văn bản nào',
+      kakao:'💡 <strong>KakaoTalk:</strong> Nhập link Open Chat hoặc ID, ví dụ: <code>https://open.kakao.com/o/xxxxx</code>'
+    }
+  },
+  ko: {
+    qrTypeTitle:'QR 코드 유형', qrTypeSubtitle:'플랫폼 선택',
+    inputTitle:'데이터 입력', inputSubtitle:'Excel 가져오기 또는 직접 입력',
+    tabManual:'✏️ 직접 입력', tabExcel:'📊 Excel 가져오기',
+    manualHint:'📋 각 줄에 하나의 QR. 형식: <strong>이름,내용</strong><br>예시: <code>메인 웹사이트,https://example.com</code>',
+    manualLabel:'QR 데이터 (여러 줄)',
+    manualPlaceholder:'메인 웹사이트,https://example.com\n페이스북,https://facebook.com/page\n전화번호,0901234567',
+    excelHint:'📊 Excel 파일 필요: <strong>A열 = QR 이름</strong>, <strong>B열 = 내용</strong><br>지원: .xlsx, .xls, .csv',
+    uploadText:'파일을 드래그하거나 클릭하여 선택', uploadSub:'.xlsx · .xls · .csv 지원',
+    excelReadOk:'✅ 파일 읽기 완료', btnClear:'삭제',
+    customTitle:'사용자 정의', customSubtitle:'색상 및 크기',
+    labelQrColor:'QR 색상', labelQrColorSpan:'QR 코드', labelBgColor:'배경색',
+    labelSize:'크기 (px)', labelEcl:'오류 수정 수준',
+    sizeSmall:'150px (소형)', sizeMed:'200px (중형)', sizeStd:'300px (표준)', sizeLg:'400px (대형)', sizeXl:'512px (특대형)',
+    eclL:'L — 낮음 (7%)', eclM:'M — 보통 (15%)', eclQ:'Q — 높음 (25%)', eclH:'H — 매우 높음 (30%)',
+    labelLogo:'QR 중앙 로고', logoName:'logo_gau.png 삽입', logoNone:'로고 없음',
+    logoDesc:'QR 중앙에 로고를 추가하려면 켜세요', logoDescOn:'로고가 QR 중앙에 삽입됩니다',
+    logoNotFound:'logo_gau.png를 찾을 수 없음',
+    logoErr:'❌ 로드 실패 — 같은 폴더 확인',
+    logoReady:'✅ logo_gau.png 준비 완료',
+    logoSizeLabel:'로고 크기:',
+    logoEclWarn:'⚠️ 로고 사용 시 오류 수정 수준 <strong>H</strong> 권장',
+    logoWarnPct:'% — 스캔에 영향 가능 — 25% 이하 권장',
+    logoSafe:'% — 안전',
+    logoNoLoad:'⚠️ logo_gau.png 로드 실패',
+    btnGenerate:'QR 코드 생성',
+    downloadTitle:'다운로드', downloadSubtitle:'출력 형식 선택',
+    labelFormat:'파일 형식',
+    btnDownloadAll:'전체 다운로드 (ZIP)',
+    resultsTitle:'결과', resultsSubtitle:'미리보기 및 개별 다운로드',
+    emptyState:'QR 코드가 없습니다<br><span style="font-size:12px;color:var(--ink3)">데이터를 입력하고 "QR 코드 생성"을 누르세요</span>',
+    btnDownload:'⬇ 다운로드', btnCopy:'📋 복사',
+    toastExcelRequired:'Excel 파일을 먼저 가져오세요',
+    toastNoData:'데이터를 입력하세요',
+    toastNoValid:'유효한 데이터가 없습니다',
+    toastLogoFail:'logo_gau.png 로드 실패 — 로고 없이 생성됩니다',
+    toastSuccess:'✅ QR 코드 {n}개 생성 완료!',
+    toastDownloaded:'다운로드 완료:',
+    toastNoQR:'다운로드할 QR이 없습니다',
+    toastCopied:'Data URL 복사 완료!',
+    toastCopyFail:'복사 실패',
+    toastExcelRead:'Excel에서 {n}줄 읽기 완료',
+    toastExcelErr:'Excel 파일 읽기 오류:',
+    progressProcessing:'처리 중',
+    progressPdf:'PDF 페이지:',
+    typeHints: {
+      url:'💡 <strong>Link/URL:</strong> 전체 URL 입력, 예: <code>https://example.com</code>',
+      facebook:'💡 <strong>Facebook:</strong> 프로필/페이지 링크 입력, 예: <code>https://facebook.com/username</code>',
+      tiktok:'💡 <strong>TikTok:</strong> 프로필 링크 입력, 예: <code>https://tiktok.com/@username</code>',
+      youtube:'💡 <strong>YouTube:</strong> 채널 또는 영상 링크 입력, 예: <code>https://youtube.com/@channel</code>',
+      zalo:'💡 <strong>Zalo:</strong> Zalo 전화번호 또는 OA 링크 입력, 예: <code>0901234567</code>',
+      maps:'💡 <strong>Google Maps:</strong> 지도 URL 또는 주소 입력, 예: <code>1 Le Loi, Can Tho</code>',
+      phone:'💡 <strong>전화번호:</strong> 전화번호 입력, 예: <code>0901234567</code>',
+      text:'💡 <strong>텍스트:</strong> 임의의 텍스트 내용 입력',
+      kakao:'💡 <strong>카카오톡:</strong> 오픈채팅 링크 또는 ID 입력, 예: <code>https://open.kakao.com/o/xxxxx</code>'
+    }
+  }
+};
+
+// ─── SET LANGUAGE ───
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('langVI').classList.toggle('active', lang === 'vi');
+  document.getElementById('langKO').classList.toggle('active', lang === 'ko');
+  const t = i18n[lang];
+
+  // Update all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+
+  // Update textarea placeholder
+  document.getElementById('manualInput').placeholder = t.manualPlaceholder;
+
+  // Update typeHints
+  typeHints = t.typeHints;
+  document.getElementById('typeHint').innerHTML = typeHints[currentType];
+
+  // Update logo toggle desc based on current state
+  const logoOn = document.getElementById('logoToggle').checked;
+  document.getElementById('logoToggleDesc').textContent = logoOn ? t.logoDescOn : t.logoDesc;
+
+  // Update logo selector "Không logo" text
+  const noneEl = document.querySelector('.logo-sel-item[data-logo="none"] span');
+  if (noneEl) noneEl.textContent = t.logoNone;
+
+  // Update logo options visibility based on current selection
+  const isNone = selectedLogoFile === 'none';
+  document.getElementById('logoOptions').classList.toggle('visible', !isNone);
+  if (logoLoaded && !isNone) setLogoStatus('ok', t.logoReady);
+}
+
+function t(key, vars) {
+  let s = (i18n[currentLang] || i18n.vi)[key] || key;
+  if (vars) Object.keys(vars).forEach(k => { s = s.replace('{' + k + '}', vars[k]); });
+  return s;
+}
 
 function setLogoStatus(type, msg) {
   const el = document.getElementById('logoStatus');
@@ -1047,16 +1317,7 @@ function setLogoStatus(type, msg) {
   el.textContent = msg;
 }
 
-const typeHints = {
-  url: '💡 <strong>Link/URL:</strong> Nhập URL đầy đủ, ví dụ: <code>https://example.com</code>',
-  facebook: '💡 <strong>Facebook:</strong> Nhập link profile/page, ví dụ: <code>https://facebook.com/username</code>',
-  tiktok: '💡 <strong>TikTok:</strong> Nhập link profile, ví dụ: <code>https://tiktok.com/@username</code>',
-  youtube: '💡 <strong>YouTube:</strong> Nhập link kênh hoặc video, ví dụ: <code>https://youtube.com/@channel</code>',
-  zalo: '💡 <strong>Zalo:</strong> Nhập số điện thoại Zalo hoặc link Zalo OA, ví dụ: <code>0901234567</code>',
-  maps: '💡 <strong>Google Maps:</strong> Nhập URL Google Maps hoặc địa chỉ, ví dụ: <code>Số 1 Lê Lợi, Cần Thơ</code>',
-  phone: '💡 <strong>Điện thoại:</strong> Nhập số điện thoại, ví dụ: <code>0901234567</code>',
-  text: '💡 <strong>Văn bản:</strong> Nhập bất kỳ nội dung văn bản nào'
-};
+let typeHints = i18n.vi.typeHints;
 
 const typeBadgeColors = {
   url: { bg:'#E8F0FB', color:'#1B5EA6' },
@@ -1066,7 +1327,8 @@ const typeBadgeColors = {
   zalo: { bg:'#E8F5EE', color:'#1A6B3C' },
   maps: { bg:'#FEF3E2', color:'#E07B00' },
   phone: { bg:'#F3E8FB', color:'#7B2FBE' },
-  text: { bg:'#F0EDE8', color:'#6B6457' }
+  text: { bg:'#F0EDE8', color:'#6B6457' },
+  kakao: { bg:'#FEF9C3', color:'#92400E' }
 };
 
 // ─── TYPE SELECTION ───
@@ -1105,9 +1367,9 @@ function handleExcelUpload(event) {
       excelData = rows.filter(r => r[0] && r[1]).map(r => ({ name: String(r[0]).trim(), content: String(r[1]).trim() }));
       document.getElementById('excelPreview').style.display = 'block';
       document.getElementById('excelInfo').textContent = `📊 ${file.name}  ·  ${excelData.length} hàng dữ liệu`;
-      toast(`Đã đọc ${excelData.length} dòng từ Excel`, 'success');
+      toast(t('toastExcelRead', {n: excelData.length}), 'success');
     } catch(err) {
-      toast('Lỗi đọc file Excel: ' + err.message, 'error');
+      toast(t('toastExcelErr') + ' ' + err.message, 'error');
     }
   };
   reader.readAsArrayBuffer(file);
@@ -1136,52 +1398,54 @@ uploadZone.addEventListener('drop', e => {
 // ─── PROCESS CONTENT ───
 function processContent(content) {
   switch(currentType) {
-    case 'zalo': return content.match(/^https?:\/\//) ? content : `https://zalo.me/${content.replace(/\D/g,'')}`;
-    case 'phone': return content.match(/^tel:/) ? content : `tel:${content.replace(/\s/g,'')}`;
-    case 'maps': return content.match(/^https?:\/\//) ? content : `https://maps.google.com/?q=${encodeURIComponent(content)}`;
+    case 'zalo': return content.match(/^https?:\/\//) ? content : 'https://zalo.me/' + content.replace(/\D/g,'');
+    case 'phone': return content.match(/^tel:/) ? content : 'tel:' + content.replace(/\s/g,'');
+    case 'maps': return content.match(/^https?:\/\//) ? content : 'https://maps.google.com/?q=' + encodeURIComponent(content);
+    case 'kakao': return content.match(/^https?:\/\//) ? content : 'https://open.kakao.com/o/' + content;
     default: return content;
   }
 }
 
-// ─── LOGO TOGGLE ───
+// ─── LOGO SELECTOR ───
 let logoImageObj = null;
+let selectedLogoFile = 'logo_gau.png'; // default
+const logoCache = {};
 
-function onLogoThumbLoad() {
-  logoLoaded = true;
-  document.getElementById('logoThumb').classList.add('visible');
-  document.getElementById('logoPlaceholderIcon').style.display = 'none';
-  setLogoStatus('ok', '✅ logo_gau.png đã sẵn sàng');
-}
-
-function toggleLogo() {
-  const cb = document.getElementById('logoToggle');
-  cb.checked = !cb.checked;
-  onLogoToggleChange();
-}
-
-function onLogoToggleChange() {
-  const on = document.getElementById('logoToggle').checked;
-  const row = document.getElementById('logoToggleRow');
-  const opts = document.getElementById('logoOptions');
-  row.classList.toggle('active', on);
-  opts.classList.toggle('visible', on);
-  document.getElementById('logoToggleDesc').textContent = on ? 'Logo sẽ được chèn vào giữa QR' : 'Bật để thêm logo vào giữa QR';
-
-  if (on && !logoLoaded) {
-    setLogoStatus('warn', '⚠️ Chưa load được logo_gau.png');
-  } else if (on) {
-    const pct = document.getElementById('logoSizeSlider').value;
-    setLogoStatus('ok', `✅ Sẵn sàng · kích thước ${pct}% · dùng ECL H để an toàn`);
+function selectLogo(el) {
+  document.querySelectorAll('.logo-sel-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  selectedLogoFile = el.dataset.logo;
+  const isNone = selectedLogoFile === 'none';
+  document.getElementById('logoOptions').classList.toggle('visible', !isNone);
+  if (!isNone) {
+    setLogoStatus('ok', t('logoReady'));
+  } else {
+    setLogoStatus('', '');
   }
 }
+
+function getSelectedLogoImg() {
+  if (selectedLogoFile === 'none') return Promise.resolve(null);
+  if (logoCache[selectedLogoFile]) return Promise.resolve(logoCache[selectedLogoFile]);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => { logoCache[selectedLogoFile] = img; resolve(img); };
+    img.onerror = () => resolve(null);
+    img.src = selectedLogoFile + '?t=' + Date.now();
+  });
+}
+
+// Keep old onLogoThumbLoad as no-op (HTML still refs it via old elements that are gone, safe)
+function onLogoThumbLoad() {}
+function toggleLogo() {}
+function onLogoToggleChange() {}
 
 function updateLogoSizeLabel() {
   const v = document.getElementById('logoSizeSlider').value;
   document.getElementById('logoSizeValue').textContent = v + '%';
   const warn = parseInt(v) > 25;
-  setLogoStatus(warn ? 'warn' : 'ok',
-    warn ? `⚠️ ${v}% có thể ảnh hưởng quét — nên ≤ 25%`
-         : `✅ ${v}% — An toàn`);
+  setLogoStatus(warn ? 'warn' : 'ok', warn ? ('⚠️ ' + v + t('logoWarnPct')) : ('✅ ' + v + t('logoSafe')));
 }
 
 function preloadLogoImage() {
@@ -1332,11 +1596,11 @@ async function generateAll() {
 
   const activeTab = document.querySelector('.tab-panel.active').id;
   if (activeTab === 'tab-excel') {
-    if (excelData.length === 0) { toast('Vui lòng import file Excel trước', 'error'); return; }
+    if (excelData.length === 0) { toast(t('toastExcelRequired'), 'error'); return; }
     items = excelData;
   } else {
     const raw = document.getElementById('manualInput').value.trim();
-    if (!raw) { toast('Vui lòng nhập dữ liệu', 'error'); return; }
+    if (!raw) { toast(t('toastNoData'), 'error'); return; }
     items = raw.split('\n').filter(l => l.trim()).map(line => {
       const comma = line.indexOf(',');
       if (comma === -1) return { name: line.trim(), content: line.trim() };
@@ -1344,21 +1608,21 @@ async function generateAll() {
     }).filter(i => i.content);
   }
 
-  if (items.length === 0) { toast('Không có dữ liệu hợp lệ', 'error'); return; }
+  if (items.length === 0) { toast(t('toastNoValid'), 'error'); return; }
 
   generatedQRs = [];
   const size = parseInt(document.getElementById('qrSize').value);
   const color = document.getElementById('qrColor').value;
   const bg = document.getElementById('bgColor').value;
   const ecl = document.getElementById('errorLevel').value;
-  const useLogo = document.getElementById('logoToggle').checked;
+  const useLogo = selectedLogoFile !== 'none';
   const logoPct = parseInt(document.getElementById('logoSizeSlider').value);
 
   // Pre-load logo image once
   let logoImg = null;
   if (useLogo) {
-    logoImg = await preloadLogoImage();
-    if (!logoImg) { toast('Không load được logo_gau.png — QR sẽ không có logo', 'error'); }
+    logoImg = await getSelectedLogoImg();
+    if (!logoImg) { toast(t('toastLogoFail'), 'error'); }
   }
 
   const grid = document.getElementById('qrGrid');
@@ -1393,8 +1657,8 @@ async function generateAll() {
         '<div class="qr-name">' + escHtml(item.name) + '</div>' +
         '<div class="qr-content-preview">' + escHtml(item.content) + '</div>' +
         '<div class="qr-actions">' +
-          '<button class="btn btn-ghost btn-sm" onclick="downloadSingle(' + idx + ')">⬇ Tải</button>' +
-          '<button class="btn btn-ghost btn-sm" onclick="copyDataUrl(' + idx + ')">📋 Copy</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="downloadSingle(' + idx + ')">' + t('btnDownload') + '</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="copyDataUrl(' + idx + ')">' + t('btnCopy') + '</button>' +
         '</div>';
       grid.appendChild(card);
 
@@ -1407,7 +1671,7 @@ async function generateAll() {
     await sleep(10);
   }
 
-  toast('✅ Đã tạo ' + items.length + ' mã QR thành công!', 'success');
+  toast(t('toastSuccess', {n: items.length}), 'success');
 }
 
 function getTypeLabel(type) {
@@ -1442,19 +1706,19 @@ async function downloadSingle(idx) {
     pdf.text(qr.name, 10, mm + 20);
     pdf.save(`${safeName}.pdf`);
   }
-  toast(`Đã tải: ${qr.name}`, 'success');
+  toast(t('toastDownloaded') + ' ' + qr.name, 'success');
 }
 
 // ─── COPY DATA URL ───
 function copyDataUrl(idx) {
   const qr = generatedQRs[idx];
   if (!qr?.dataUrl) return;
-  navigator.clipboard.writeText(qr.dataUrl).then(() => toast('Đã copy Data URL!', 'success')).catch(() => toast('Không thể copy', 'error'));
+  navigator.clipboard.writeText(qr.dataUrl).then(() => toast(t('toastCopied'), 'success')).catch(() => toast(t('toastCopyFail'), 'error'));
 }
 
 // ─── DOWNLOAD ALL ───
 async function downloadAll() {
-  if (generatedQRs.length === 0) { toast('Chưa có QR nào để tải', 'error'); return; }
+  if (generatedQRs.length === 0) { toast(t('toastNoQR'), 'error'); return; }
 
   const btn = document.getElementById('btnDownloadAll');
   btn.disabled = true; btn.textContent = '⏳ Đang nén...';
@@ -1470,7 +1734,7 @@ async function downloadAll() {
     } else {
       await downloadAllZIP(progressBar, progressText);
     }
-    toast(`✅ Đã tải ${generatedQRs.length} QR Code!`, 'success');
+    toast(t('toastSuccess', {n: generatedQRs.length}), 'success');
   } catch(e) {
     toast('Lỗi khi tải: ' + e.message, 'error');
   }
@@ -1504,7 +1768,7 @@ async function downloadAllZIP(progressBar, progressText) {
 
     const pct = Math.round(((i+1)/generatedQRs.length)*100);
     progressBar.style.width = pct + '%';
-    progressText.textContent = `Đang xử lý ${i+1}/${generatedQRs.length}...`;
+    progressText.textContent = t('progressProcessing') + ' ' + (i+1) + '/' + generatedQRs.length + '...';
     await sleep(5);
   }
 
@@ -1545,7 +1809,7 @@ async function downloadAllPDF(progressBar, progressText) {
 
     const pct = Math.round(((i+1)/generatedQRs.length)*100);
     progressBar.style.width = pct + '%';
-    progressText.textContent = `Trang PDF: ${i+1}/${generatedQRs.length}...`;
+    progressText.textContent = t('progressPdf') + ' ' + (i+1) + '/' + generatedQRs.length + '...';
     await sleep(5);
   }
 
