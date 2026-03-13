@@ -926,31 +926,31 @@ textarea {
       <div class="card-body">
         <div class="type-grid" id="typeGrid">
           <button class="type-btn active" data-type="url" onclick="selectType(this)">
-            <span class="type-emoji">🔗</span>Link/URL
+            <span class="type-emoji">🔗</span><span data-i18n="typeUrl">Link/URL</span>
           </button>
           <button class="type-btn" data-type="facebook" onclick="selectType(this)">
-            <span class="type-emoji">📘</span>Facebook
+            <span class="type-emoji">📘</span><span data-i18n="typeFacebook">Facebook</span>
           </button>
           <button class="type-btn" data-type="tiktok" onclick="selectType(this)">
-            <span class="type-emoji">🎵</span>TikTok
+            <span class="type-emoji">🎵</span><span data-i18n="typeTiktok">TikTok</span>
           </button>
           <button class="type-btn" data-type="youtube" onclick="selectType(this)">
-            <span class="type-emoji">▶️</span>YouTube
+            <span class="type-emoji">▶️</span><span data-i18n="typeYoutube">YouTube</span>
           </button>
           <button class="type-btn" data-type="zalo" onclick="selectType(this)">
-            <span class="type-emoji">💬</span>Zalo
+            <span class="type-emoji">💬</span><span data-i18n="typeZalo">Zalo</span>
           </button>
           <button class="type-btn" data-type="maps" onclick="selectType(this)">
-            <span class="type-emoji">📍</span>Maps
+            <span class="type-emoji">📍</span><span data-i18n="typeMaps">Maps</span>
           </button>
           <button class="type-btn" data-type="phone" onclick="selectType(this)">
-            <span class="type-emoji">📞</span>Điện thoại
+            <span class="type-emoji">📞</span><span data-i18n="typePhone">Điện thoại</span>
           </button>
           <button class="type-btn" data-type="text" onclick="selectType(this)">
-            <span class="type-emoji">📝</span>Văn bản
+            <span class="type-emoji">📝</span><span data-i18n="typeText">Văn bản</span>
           </button>
           <button class="type-btn" data-type="kakao" onclick="selectType(this)">
-            <span class="type-emoji">💛</span>KakaoTalk
+            <span class="type-emoji">💛</span><span data-i18n="typeKakao">KakaoTalk</span>
           </button>
         </div>
 
@@ -1219,6 +1219,9 @@ const i18n = {
     logoSafe:'% — An toàn',
     logoNoLoad:'⚠️ Chưa load được logo_gau.png',
     btnGenerate:'Tạo QR Code',
+    typeUrl:'Link/URL', typeFacebook:'Facebook', typeTiktok:'TikTok', typeYoutube:'YouTube',
+    typeZalo:'Zalo', typeMaps:'Maps', typePhone:'Điện thoại', typeText:'Văn bản', typeKakao:'KakaoTalk',
+    resultsCountSuffix:'mã',
     downloadTitle:'Tải Xuống', downloadSubtitle:'Chọn định dạng xuất',
     labelFormat:'Định dạng file',
     btnDownloadAll:'Tải tất cả (ZIP)',
@@ -1276,6 +1279,9 @@ const i18n = {
     logoSafe:'% — 안전',
     logoNoLoad:'⚠️ logo_gau.png 로드 실패',
     btnGenerate:'QR 코드 생성',
+    typeUrl:'Link/URL', typeFacebook:'Facebook', typeTiktok:'TikTok', typeYoutube:'YouTube',
+    typeZalo:'Zalo', typeMaps:'Maps', typePhone:'전화번호', typeText:'텍스트', typeKakao:'카카오톡',
+    resultsCountSuffix:'개',
     downloadTitle:'다운로드', downloadSubtitle:'출력 형식 선택',
     labelFormat:'파일 형식',
     btnDownloadAll:'전체 다운로드 (ZIP)',
@@ -1314,33 +1320,29 @@ function setLang(lang) {
   currentLang = lang;
   document.getElementById('langVI').classList.toggle('active', lang === 'vi');
   document.getElementById('langKO').classList.toggle('active', lang === 'ko');
-  const t = i18n[lang];
+  const tr = i18n[lang];
 
   // Update all data-i18n elements
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (t[key] !== undefined) el.innerHTML = t[key];
+    if (tr[key] !== undefined) el.innerHTML = tr[key];
   });
 
   // Update textarea placeholder
-  document.getElementById('manualInput').placeholder = t.manualPlaceholder;
+  document.getElementById('manualInput').placeholder = tr.manualPlaceholder;
 
   // Update typeHints
-  typeHints = t.typeHints;
+  typeHints = tr.typeHints;
   document.getElementById('typeHint').innerHTML = typeHints[currentType];
-
-  // Update logo toggle desc based on current state
-  const logoOn = document.getElementById('logoToggle').checked;
-  document.getElementById('logoToggleDesc').textContent = logoOn ? t.logoDescOn : t.logoDesc;
 
   // Update logo selector "Không logo" text
   const noneEl = document.querySelector('.logo-sel-item[data-logo="none"] span');
-  if (noneEl) noneEl.textContent = t.logoNone;
+  if (noneEl) noneEl.textContent = tr.logoNone;
 
   // Update logo options visibility based on current selection
   const isNone = selectedLogoFile === 'none';
   document.getElementById('logoOptions').classList.toggle('visible', !isNone);
-  if (logoLoaded && !isNone) setLogoStatus('ok', t.logoReady);
+  if (!isNone) setLogoStatus('ok', tr.logoReady);
 }
 
 function t(key, vars) {
@@ -1706,7 +1708,7 @@ async function generateAll() {
       console.error('QR error:', e);
     }
 
-    document.getElementById('resultsCount').textContent = (i+1) + ' / ' + items.length + ' mã';
+    document.getElementById('resultsCount').textContent = (i+1) + ' / ' + items.length + ' ' + t('resultsCountSuffix');
     await sleep(10);
   }
 
@@ -1714,8 +1716,8 @@ async function generateAll() {
 }
 
 function getTypeLabel(type) {
-  const labels = { url:'URL', facebook:'Facebook', tiktok:'TikTok', youtube:'YouTube', zalo:'Zalo', maps:'Maps', phone:'Phone', text:'Text' };
-  return labels[type] || type;
+  const keyMap = { url:'typeUrl', facebook:'typeFacebook', tiktok:'typeTiktok', youtube:'typeYoutube', zalo:'typeZalo', maps:'typeMaps', phone:'typePhone', text:'typeText', kakao:'typeKakao' };
+  return t(keyMap[type] || type);
 }
 
 // ─── DOWNLOAD SINGLE ───
